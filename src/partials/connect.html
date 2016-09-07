@@ -1,0 +1,24 @@
+<article>
+	<header>Conectarse a una cámara</header>
+	<section>
+		<div class="page" ng-show="step == 0">
+			<h2>Antes de nada, activa el wifi de la cámara en modo app</h2>
+			<div class="button" ng-click="nextStep()">Hecho!</div>
+		</div>
+		<div class="page" ng-show="step == 1">
+			<h2>Selecciona la red de la cámara</h2>
+			<h3>El nombre de la red suele ser las letras "GP" y una série de números. Si no aparece, espera un minuto y haz click en Actualizar</h3>
+			<select ng-model="selectedNetwork">
+				<option ng-repeat="network in (networks | filter: goProNetworks)">{{network.ssid}}</option>
+			</select>
+			<input type="checkbox" ng-model="filterNetworks">
+			<div class="button" ng-click="updateNetworkList()">Actualizar</div>
+			<div class="button" ng-click="nextStep()">Hecho!</div>
+		</div>
+		<div class="page" ng-show="step == 2">
+			<h2>Escribe el pin que sale en la pantalla de la cámara</h2>
+			<input type="text" ng-model="pin">
+			<div class="button" ng-click="connect()">Conectar</div>
+		</div>
+	</section>
+</article>

@@ -22,7 +22,10 @@
   "homepage": "https://github.com/AsLogd/GoRaspi#readme",
   "dependencies": {
     "angular": "^1.5.8",
-    "notify-send": "^0.1.2"
+    "express": "^4.14.0",
+    "notify-send": "^0.1.2",
+    "request": "^2.74.0",
+    "wifi-control": "^2.0.0"
   },
   "devDependencies": {
     "angular-animate": "^1.3.10",

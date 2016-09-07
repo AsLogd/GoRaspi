@@ -4,7 +4,7 @@
 	<link rel="stylesheet" type="text/css" href="css/build.css">
 	<script src='js/angular.js'></script>
 	<script src="js/angular-route.js"></script>
-	<script src="js/ng_route_ext.js"></script>
+	<!--<script src="js/ng_route_ext.js"></script>-->
 	<script src="js/angular-animate.js"></script>
 	<script src="js/ng-notify.js"></script>
 	<script src="js/app.js"></script>
@@ -14,34 +14,23 @@
 	
 	<link href='http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css' rel='stylesheet' type='text/css'>
 
+
 </head>
 <body>
-<aside>
-	<div class='aside-logo'>
-	</div>
-	<nav>
-		<ul>
-			<li link-route='/'>
-				<span>Item 1</span>
-				<span class='ion-ios-bookmarks'></span>
-			</li>
-			<li link-route='/route1'>
-				<span>Item 2</span>
-				<span class='ion-home'></span>
-			</li>			
-			<li link-route='/route2'>
-				<span>Item 3</span>
-				<span class='ion-compose'></span>
-			</li>			
-			<li link-route='/route3'>
-				<span>Item 4</span>
-				<span class='ion-user'></span>
-			</li>
-		</ul>
-	</nav>
-</aside>
-<main>
-	<div ng-view></div>
-</main>
+	<main>
+		<article>
+		<header>
+			<h1>Go raspi</h1>
+		</header>
+		<section>
+			<ul class="button-panel">
+				<li ng-if="!camera.isConnected()">Conectar camara</li>
+				<li ng-if="camera.isConnected()">Desconectar camara</li>
+				<li ng-class="{'enabled': camera.isConnected()}">Estado</li>
+			</ul>
+			<div ng-view></div>
+		</section>
+	</article>
+	</main>
 </body>
 </html>
