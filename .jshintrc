@@ -1,0 +1,6 @@
+{
+  "predef": ["angular"],
+  "globalstrict"  : true,
+  "strict" : false,
+  "debug" : true
+  }
