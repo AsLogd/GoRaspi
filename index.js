@@ -23,7 +23,7 @@ app.put('/connect/:network/:pin', function(req, res){
     password: "goprohero" //Default password
   };
 
-  WiFiControl.connectToAp(ap, function(err, response){
+  WiFiControl.connectToAP(ap, function(err, response){
     if(err) console.log(err);
     console.log(response.msg);
     if(response.success)
