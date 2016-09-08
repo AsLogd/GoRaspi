@@ -9,6 +9,16 @@ angular.module('myApp', ['ngRoute', 'ngAnimate', 'ngNotify', 'controllers', 'dir
 		controller: 'ConnectCtrl',
 		name: 'connect'
 	})
+	.when('/status', {
+		templateUrl: 'partials/status.html',
+		controller: 'StatusCtrl',
+		name: 'status',
+		resolve:{
+			'status': ['API', function(API){
+				return API.getStatus();
+			}]
+		}
+	})
 	.otherwise({
 		redirectTo: '/connect'
 	});

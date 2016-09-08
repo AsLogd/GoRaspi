@@ -11,5 +11,9 @@ angular.module('services', [])
 	service.connect = function(network, pin){
 		return $http.put(API_URL+"/connect/"+network+"/"+pin);
 	};
+
+	service.getStatus = function(){
+		return $http.get(API_URL+"/cameraStatus");
+	};
 	return service;
 }]);

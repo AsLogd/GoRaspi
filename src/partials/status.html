@@ -1,3 +1,6 @@
-<article>
-	<div> Estadoestadoestado</div>
+<article id="status">
+	<div>Bateria: {{status.battery.available ? "Sí" : "No"}}</div>
+	<div ng-if="status.battery.available">Carga: {{status.battery.level | parseBatteryLevel}}</div>
+	<div>Modo: {{status.mode}}</div>
+	<div>Espacio: {{status.storage.photosTaken}}/{{status.storage.photosTaken + status.storage.remainingPhotos}}</div>
 </article>

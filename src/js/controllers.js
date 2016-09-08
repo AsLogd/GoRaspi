@@ -2,8 +2,8 @@
 
 angular.module('controllers', [])
 
-.controller('ConnectCtrl', ['$scope', 'API', 'ngNotify',
-	function ($scope, API, ngNotify) {
+.controller('ConnectCtrl', ['$scope', 'API', 'ngNotify', '$location',
+	function ($scope, API, ngNotify, $location) {
 		$scope.step = 0;
 		$scope.networks = [];
 		$scope.selectedNetwork = "";
@@ -47,6 +47,7 @@ angular.module('controllers', [])
 		$scope.connect = function(){
 			API.connect($scope.selectedNetwork, $scope.pin).then(function(){
 				console.info("Connected to "+$scope.selectedNetwork+".");
+				$location.path("/status");
 			});
 		};
 
@@ -57,4 +58,18 @@ angular.module('controllers', [])
 				return true;
 		};
 
+}])
+.controller('StatusCtrl', ['status', 
+	function(status){
+		$scope.status = status;
+		$scope.parseBatteryLevel = function(level){
+			if(level == 1)
+				return "Baja";
+			if(level == 2)
+				return "Media";
+			if(level == 3)
+				return "Alta";
+			if(level == 4)
+				return "Cargando";
+		};
 }]);

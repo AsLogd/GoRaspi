@@ -60,6 +60,32 @@ function connectToCamera(req, res, retries){
   });
 }
 
+function parseStatusObject(body){
+  var obj;
+  obj.battery = {
+    available: (body.status["1"] == 1),
+    level: body.status["2"]
+  };
+  
+  if(body.status["43"] == 0)
+    obj.mode = "Video";
+  else if(body.status["43"] == 1)
+    obj.mode = "Foto";
+  else
+    obj.mode = "MultiShot";
+
+  obj.streaming = (body.status["32"] == 1);
+
+  obj.storage = {
+    remainingPhotos: body.status["34"],
+    photosTaken: body.status["38"]
+  };
+
+
+  return obj;
+
+}
+
 WiFiControl.init({
   debug: true
 });
@@ -73,6 +99,21 @@ app.get('/networks', function(req, res){
   });
 });
 
+app.get('/cameraStatus', function(req, res){
+  request({
+    localAddress:'',
+    method: 'GET',
+    uri: 'http://10.5.5.9/gp/gpControl/status'
+  },
+  function (error, response, body)
+  {
+    if (!error && response.statusCode == 200)
+    {
+      res.json(parseStatusObject(body));
+    }
+  })
+});
+
 app.put('/connect/:network/:pin', function(req, res){
   console.log("Connecting to: "+req.params.network + ", "+req.params.pin+"...");
   
@@ -80,6 +121,7 @@ app.put('/connect/:network/:pin', function(req, res){
 
 });
 
+//Debug pourposes
 app.get('/photo', function(req, res){
   request({
     localAddress:'',
