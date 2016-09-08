@@ -31,7 +31,7 @@ angular.module('services', [])
 
 		var deferred = $q.defer();
 		API.connect(network, pin).then(function(response){
-			_camera.status = response.data.status;
+			_camera.status = response.data;
 			_camera.connected = true;
 			deferred.resolve();
 		});
@@ -44,7 +44,7 @@ angular.module('services', [])
 
 		var deferred = $q.defer();
 		API.getStatus().then(function(response){
-			_camera.status = response.data.status;
+			_camera.status = response.data;
 			deferred.resolve();
 		});
 

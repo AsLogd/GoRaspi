@@ -59,13 +59,13 @@ function connectToCamera(req, res, retries){
               }
               else
               {
-                console.log("Error on finish pairing"+JSON.stringify(response));
+                console.log("Error on finish pairing: "+JSON.parse(response.body).message);
               }
             })
           }
           else
           {
-            console.log("Error on finish pairing"+JSON.stringify(response));
+            console.log("Error on finish pairing: "+JSON.parse(response.body).message);
           }
         });
       }
@@ -85,12 +85,12 @@ function checkConnection(cb){
   {
     if (!error && response.statusCode == 200)
     {
-      console.log("Check connection:"+JSON.stringify(body));
-      if(cb) cb(true, body.status);
+      console.log("Check connection [ok]");
+      if(cb) cb(true, parseStatusObject(body));
     }
     else
     {
-      console.log("Check connection failed");
+      console.log("Check connection [failed]");
       if(cb) cb(false);
     }
 
