@@ -1,10 +1,10 @@
 <article id="connect">
 	<section>
-		<div class="animate-show" ng-show="step == 0">
+		<div class="page animate-show" ng-show="step == 0">
 			<h2>Antes de nada, activa el wifi de la cámara en modo app</h2>
 			<div class="button" ng-click="nextStep()">Hecho!</div>
 		</div>
-		<div class="animate-show" ng-show="step == 1">
+		<div class="page animate-show" ng-show="step == 1">
 			<h2>Selecciona la red de la cámara</h2>
 			<h3>El nombre de la red suele ser las letras "GP" y una série de números. Si no aparece, espera un minuto y haz click en Actualizar</h3>
 			<select id="networks" ng-model="selectedNetwork">
@@ -17,7 +17,7 @@
 				<div class="button" ng-click="nextStep()">Hecho!</div>
 			</div>
 		</div>
-		<div class="animate-show" ng-show="step == 2">
+		<div class="page animate-show" ng-show="step == 2">
 			<h2>Escribe el pin que sale en la pantalla de la cámara</h2>
 			<input class="short centered" type="text" ng-model="pin">
 			<div class="button margin-top" ng-click="connect()">Conectar</div>

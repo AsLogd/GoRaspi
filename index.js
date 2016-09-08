@@ -13,11 +13,15 @@ function connectToCamera(req, res, retries){
   WiFiControl.connectToAP(ap, function(err, response){
     if(err)
     {
-      console.log("Retrying...");
+      console.log(err);
       retries--;
-      setTimeout(function(){
-        connectToCamera(req, res, retries);
-      },1000);
+      if(retries > 0)
+      {
+        console.log("Retrying...("+retries+")");
+        setTimeout(function(){
+          connectToCamera(req, res, retries);
+        },1000);
+      }
       
       return;
     }
@@ -33,7 +37,6 @@ function connectToCamera(req, res, retries){
       if(error) console.log("Error on start pairing:"+error);
       if (!error && response.statusCode == 200)
       {
-        res.json({success:true});
         request({
           localAddress:'',
           method: 'GET',
@@ -43,6 +46,7 @@ function connectToCamera(req, res, retries){
         function (error, response, body)
         {
           if(error) console.log("Error on finish pairing:"+error);
+          
           if (!error && response.statusCode == 200)
           {
             res.json({success:true});
