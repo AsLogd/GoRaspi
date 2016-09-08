@@ -33,6 +33,33 @@ angular.module('directives', [])
 	};
 }])
 */
+.directive('loading', ['$window', function(window){
+	return {
+		restrict: 'E',
+		template: '<div class="loading">' +
+					'<img src="img/loading.gif" />'+
+					'</div>',
+		link: function(scope, elem, attrs){
+			elem.addClass('ng-hide');
+
+			scope.$on('$routeChangeStart', function(){
+				elem.removeClass('ng-hide');
+			});
+
+			scope.$on('$routeChangeSuccess', function(){
+				elem.addClass('ng-hide');
+			});
+
+			scope.$on('startLoading', function(){
+				elem.removeClass('ng-hide');
+			});
+
+			scope.$on('finishLoading', function(){
+				elem.addClass('ng-hide');
+			});
+		}
+	};
+}])
 .directive('linkRoute',['$location', function($location){
 	return {
 		restrict: 'A',

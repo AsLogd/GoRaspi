@@ -53,6 +53,15 @@ function applyState(){
   }
 }
 
+function pushIfNotExists(aps, ap){
+  for(var i = 0; i < aps.length; i++)
+  {
+    if(aps[i].ssid == ap.ssid) return;
+  }
+
+  aps.push(ap);
+}
+
 function connectToCamera(network, pin, password, retries, cb, cberr){
   var ap={
     ssid: network,
@@ -112,7 +121,7 @@ function connectToCamera(network, pin, password, retries, cb, cberr){
                 {                
                   console.log("Connected to "+network);
                   serverState.aps = serverState.aps || [];
-                  serverState.aps.push(ap);
+                  pushIfNotExists(serverState.aps, ap);
                   serverState.lastAp = ap;
                   console.log("New server state:" + JSON.stringify(serverState));
                   storage.setItem("serverState", serverState);
@@ -235,6 +244,10 @@ app.put('/connect/:network/:pin/:password', function(req, res){
     res.status(404).json({msg: "No se ha podido conectar con la red"});
   });
 
+});
+
+app.delete('/disconnect', function(req, res){
+  //TODO
 });
 
 //Debug pourposes

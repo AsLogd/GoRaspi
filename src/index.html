@@ -15,17 +15,19 @@
 </head>
 <body>
 	<main>
+		<loading></loading>
 		<article>
-			<header>
-				<h1>{{$rootScope.serverStatus.lastAp.ssid || "Desconectado"}}</h1>
+			<header ng-controller="HeaderCtrl">
+				<h1>{{ssid ? "Conectado a: "+ssid : "Desconectado"}}</h1>
 			</header>
 			<section >
 				<ul ng-controller="PanelCtrl" class="button-panel">
-					<li class="enabled" link-route="/connect" ng-if="!camera.isConnected()">Conectar camara</li>
-					<li class="enabled"  ng-if="camera.isConnected()">Desconectar camara</li>
+					<li class="enabled" link-route="/connect">
+						{{!camera.isConnected() ? "Conectar cámara" : "Cambiar cámara"}}
+					</li>
 					<li link-route="/status" ng-class="{'enabled': camera.isConnected()}">Estado</li>
 				</ul>
-				<div class="view" ng-view></div>
+				<div class="view fade" ng-view></div>
 			</section>
 		</article>
 	</main>

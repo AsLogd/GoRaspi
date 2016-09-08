@@ -22,6 +22,10 @@ angular.module('services', [])
 		return $http.get(API_URL+"/init");
 	};
 
+	service.disconnect = function(){
+		return $http.delete(API_URL+"/disconnect");
+	};
+
 	return service;
 }])
 .factory('Camera', ['API', '$q', function(API, $q){
@@ -48,10 +52,20 @@ angular.module('services', [])
 
 
 	service.connect = function(network, pin, password){
-		if(service.isConnected()) return;
 
 		var deferred = $q.defer();
 		API.connect(network, pin, password).then(function(response){
+			_camera.status = response.data;
+			_camera.connected = true;
+			deferred.resolve();
+		});
+
+		return deferred.promise;
+	};
+	service.connectExisting = function(ap){
+
+		var deferred = $q.defer();
+		API.connect(ap.ssid, "", ap.password).then(function(response){
 			_camera.status = response.data;
 			_camera.connected = true;
 			deferred.resolve();

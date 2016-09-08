@@ -1,5 +1,16 @@
-<article class="animate-show" id="connect">
+<article  id="connect">
 	<section>
+	<div class="page animate-show" ng-show="step == -1">
+			<div ng-if="aps.length > 0">
+				<h2>Reconectar a una cámara</h2>
+				<h3>Antes de conectarte, selecciona 'Existing' en las opciones de wifi de la cámara, dentro de GoPro App</h3>
+				<ul class="cameras">
+					<li class="button short centered" ng-repeat="ap in aps" ng-click="connectExistingAp(ap)">{{ap.ssid}}</li>
+				</ul>
+			</div>
+			<h2 class="margin-top">Conectar por primera vez</h2>
+			<div class="button" ng-click="nextStep()">Empezar</div>
+		</div>
 		<div class="page animate-show" ng-show="step == 0">
 			<h2>Antes de nada, activa el wifi de la cámara en modo app</h2>
 			<div class="button" ng-click="nextStep()">Hecho!</div>
