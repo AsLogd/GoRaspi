@@ -4,12 +4,30 @@ angular.module('controllers', [])
 .controller('PanelCtrl', ['$scope', 'Camera', function($scope, camera){
 	$scope.camera = camera;
 }])
+.controller('InitCtrl', ['$scope', '$rootScope', 'serverStatus', 'Camera', '$location', 
+	function($scope, $rootScope, serverStatus, Camera, $location){
+		$rootScope.serverStatus = serverStatus.data;
+		if(serverStatus.data.lastAp)
+		{
+			Camera.init(true).then(function(){
+				$location.path('/status');
+				
+			});
+		}
+		else
+		{
+			Camera.init(false);
+			$location.path('/connect');
+		}
+}])
 .controller('ConnectCtrl', ['$scope', 'API', 'ngNotify', 'Camera', '$location',
 	function ($scope, API, ngNotify, Camera, $location) {
 		$scope.step = 0;
 		$scope.networks = [];
 		$scope.selectedNetwork = "";
 		$scope.showNetworks = false;
+		$scope.customPasswordUsed = false;
+		$scope.password = "";
 
 		if(Camera.isConnected())
 			$location.path('/status');
@@ -50,7 +68,7 @@ angular.module('controllers', [])
 		};
 
 		$scope.connect = function(){
-			Camera.connect($scope.selectedNetwork, $scope.pin).then(function(){
+			Camera.connect($scope.selectedNetwork, $scope.pin, $scope.password).then(function(){
 				console.info("Connected to "+$scope.selectedNetwork+".");
 				$location.path("/status");
 			});

@@ -4,6 +4,16 @@ angular.module('myApp', ['ngRoute', 'ngAnimate', 'ngNotify', 'controllers', 'dir
 .config(['$routeProvider', function($routeProvider) {
 
 	$routeProvider
+	.when('/', {
+		controller:'InitCtrl',
+		name: 'init',
+		resolve:{
+			'serverStatus':['API', function(API){
+				return API.getServerStatus();
+			}]
+		},
+		template: " "
+	})
 	.when('/connect', {
 		templateUrl: 'partials/connect.html',
 		controller: 'ConnectCtrl',
@@ -15,10 +25,12 @@ angular.module('myApp', ['ngRoute', 'ngAnimate', 'ngNotify', 'controllers', 'dir
 		name: 'status'
 	})
 	.otherwise({
-		redirectTo: '/connect'
+		redirectTo: '/'
 	});
 	
 }])
-.run(['$rootScope',function($rootScope) {
+.run(['$rootScope', '$location', function($rootScope, $location) {
   $rootScope.title = "MyAngularSeed";
+  $location.path('/');
+
 }]);

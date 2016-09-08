@@ -1,4 +1,4 @@
-<article id="connect">
+<article class="animate-show" id="connect">
 	<section>
 		<div class="page animate-show" ng-show="step == 0">
 			<h2>Antes de nada, activa el wifi de la cámara en modo app</h2>
@@ -12,6 +12,9 @@
 			</select>
 			<label for="filter">Mostrar todos las redes</label>
 			<input id="filter" type="checkbox" ng-model="showNetworks">
+			<label for="pass">Custom password</label>
+			<input id="pass" type="checkbox" ng-model="customPasswordUsed">
+			<input ng-model="password" ng-if="customPasswordUsed" type="text">
 			<div class="margin-top center-buttons">
 				<div class="button" ng-click="updateNetworkList()">Actualizar</div>
 				<div class="button" ng-click="nextStep()">Hecho!</div>

@@ -2,16 +2,64 @@ var express = require('express');
 var app = express();
 var request = require('request');
 var WiFiControl = require('wifi-control');
+var storage = require('node-persist');
 
 var CONNECT_RETRIES = 3;
+var CHECK_TIMEOUT = 5000;
 
-function connectToCamera(req, res, retries){
+var serverState = {};
+
+storage.init({}).then(function(){
+  storage.getItem("serverState").then(function(value){
+    if(value !== undefined){
+      console.log("Got state!:"+JSON.stringify(value));
+      serverState = value;
+    }
+    else
+    {
+      serverState = {};
+    }
+    applyState();
+  });  
+});
+
+
+
+
+WiFiControl.init({
+  debug: true
+});
+
+app.use(express.static('dist'));
+
+function applyState(){
+  //We were connected to a camera
+  if(serverState.lastAp)
+  {
+    console.log("Connecting to last Ap...");
+    connectToCamera(serverState.lastAp.ssid, "", serverState.lastAp.password, CONNECT_RETRIES, function(){
+      console.log("Connected to last Ap: ("+serverState.lastAp.ssid+")");
+
+    }, function(){
+      serverState.lastAp = null;
+      storage.setItem("serverState", serverState);
+      console.log("Unable to connect to last ap");
+    });
+  }
+  //We had tasks running
+  if(serverState.tasks.length > 0)
+  {
+    //TODO: init tasks
+  }
+}
+
+function connectToCamera(network, pin, password, retries, cb, cberr){
   var ap={
-    ssid: req.params.network,
-    password: "goprohero" //Default password
+    ssid: network,
+    password: (password !== "undefined") ? password : "goprohero" //Default password
   };
-  WiFiControl.connectToAP(ap, function(err, response){
 
+  WiFiControl.connectToAP(ap, function(err, response){
     checkConnection(function(connected, status){
       if(!connected)
       {
@@ -22,8 +70,14 @@ function connectToCamera(req, res, retries){
         {
           console.log("Retrying...("+retries+")");
           setTimeout(function(){
-            connectToCamera(req, res, retries);
+            connectToCamera(network, pin, password, retries, cb, cberr);
           },1000);
+        }
+        else
+        {
+
+          if(cberr) cberr();
+
         }
         
         return;
@@ -31,43 +85,50 @@ function connectToCamera(req, res, retries){
       else
       {
         //THERE IS CONNECTION!
-        res.json(status);
-
-        console.log("Pairing...");
-        request({
-          localAddress:'',
-          method: 'GET',
-          uri: 'https://10.5.5.9/gpPair?c=start&pin='+req.params.pin+'&mode=0',
-          rejectUnauthorized: false
-        },
-        function (error, response, body)
+        cb(status);
+        if(pin !== "undefined")
         {
-          if (!error && response.statusCode == 200)
+          console.log("Pairing...");
+          request({
+            localAddress:'',
+            method: 'GET',
+            uri: 'https://10.5.5.9/gpPair?c=start&pin='+pin+'&mode=0',
+            rejectUnauthorized: false
+          },
+          function (error, response, body)
           {
-            request({
-              localAddress:'',
-              method: 'GET',
-              uri: 'https://10.5.5.9/gpPair?c=finish&pin='+req.params.pin+'&mode=0',
-              rejectUnauthorized: false
-            },
-            function (error, response, body)
+            if (!error && response.statusCode == 200)
             {
-              
-              if (!error && response.statusCode == 200)
-              {                
-                console.log("Connected to "+req.params.network);
-              }
-              else
+              request({
+                localAddress:'',
+                method: 'GET',
+                uri: 'https://10.5.5.9/gpPair?c=finish&pin='+pin+'&mode=0',
+                rejectUnauthorized: false
+              },
+              function (error, response, body)
               {
-                console.log("Error on finish pairing: "+JSON.parse(response.body).message);
-              }
-            })
-          }
-          else
-          {
-            console.log("Error on finish pairing: "+JSON.parse(response.body).message);
-          }
-        });
+                
+                if (!error && response.statusCode == 200)
+                {                
+                  console.log("Connected to "+network);
+                  serverState.aps = serverState.aps || [];
+                  serverState.aps.push(ap);
+                  serverState.lastAp = ap;
+                  console.log("New server state:" + JSON.stringify(serverState));
+                  storage.setItem("serverState", serverState);
+                }
+                else
+                {
+                  console.log("Error on finish pairing: "+JSON.parse(response.body).message);
+                }
+              })
+            }
+            else
+            {
+              console.log("Error on finish pairing: "+JSON.parse(response.body).message);
+            }
+          });
+        }
       }
     });
       
@@ -76,6 +137,14 @@ function connectToCamera(req, res, retries){
 }
 
 function checkConnection(cb){
+  var resolved = false;
+  setTimeout(function(){
+    if(cb && !resolved){
+      cb(false);
+      console.log("Check connection [failed] (timeout)");
+    } 
+  }, CHECK_TIMEOUT);
+
   request({
     localAddress:'',
     method: 'GET',
@@ -83,6 +152,7 @@ function checkConnection(cb){
   },
   function (error, response, body)
   {
+    console.log("helou2");
     if (!error && response.statusCode == 200)
     {
       console.log("Check connection [ok]");
@@ -93,7 +163,7 @@ function checkConnection(cb){
       console.log("Check connection [failed]");
       if(cb) cb(false);
     }
-
+    resolved = true;
 
   });
 }
@@ -125,11 +195,9 @@ function parseStatusObject(body){
 
 }
 
-WiFiControl.init({
-  debug: true
+app.get('/init', function(req, res){
+  res.json(serverState);
 });
-
-app.use(express.static('dist'));
 
 app.get('/networks', function(req, res){
   WiFiControl.scanForWiFi( function(err, response) {
@@ -158,10 +226,14 @@ app.get('/cameraStatus', function(req, res){
   })
 });
 
-app.put('/connect/:network/:pin', function(req, res){
+app.put('/connect/:network/:pin/:password', function(req, res){
   console.log("Connecting to: "+req.params.network + ", "+req.params.pin+"...");
   
-  connectToCamera(req, res, CONNECT_RETRIES);
+  connectToCamera(req.params.network, req.params.pin, req.params.password, CONNECT_RETRIES, function(status){
+    res.json(status);
+  }, function(){
+    res.status(404).json({msg: "No se ha podido conectar con la red"});
+  });
 
 });
 
