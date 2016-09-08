@@ -45,8 +45,12 @@ angular.module('directives', [])
 			});
 
 			elem.bind('click', function(){
-				$location.path( attrs.linkRoute );
-				scope.$apply();
+				if(elem.hasClass("enabled"))
+				{
+					$location.path( attrs.linkRoute );
+					scope.$apply();
+					
+				}
 			});
 		}
 	};

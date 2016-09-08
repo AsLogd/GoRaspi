@@ -16,9 +16,9 @@
 <body>
 	<main>
 		<article>
-		<section>
-			<ul class="button-panel">
-				<li class="enabled" link-route="/connect"ng-if="!camera.isConnected()">Conectar camara</li>
+		<section >
+			<ul ng-controller="PanelCtrl" class="button-panel">
+				<li class="enabled" link-route="/connect" ng-if="!camera.isConnected()">Conectar camara</li>
 				<li class="enabled"  ng-if="camera.isConnected()">Desconectar camara</li>
 				<li link-route="/status" ng-class="{'enabled': camera.isConnected()}">Estado</li>
 			</ul>

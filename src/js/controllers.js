@@ -1,13 +1,18 @@
 
 
 angular.module('controllers', [])
-
-.controller('ConnectCtrl', ['$scope', 'API', 'ngNotify', '$location',
-	function ($scope, API, ngNotify, $location) {
+.controller('PanelCtrl', ['$scope', 'Camera', function($scope, camera){
+	$scope.camera = camera;
+}])
+.controller('ConnectCtrl', ['$scope', 'API', 'ngNotify', 'Camera', '$location',
+	function ($scope, API, ngNotify, Camera, $location) {
 		$scope.step = 0;
 		$scope.networks = [];
 		$scope.selectedNetwork = "";
 		$scope.showNetworks = false;
+
+		if(Camera.isConnected())
+			$location.path('/status');
 
 		$scope.nextStep = function(){
 			//Loading?
@@ -45,7 +50,7 @@ angular.module('controllers', [])
 		};
 
 		$scope.connect = function(){
-			API.connect($scope.selectedNetwork, $scope.pin).then(function(){
+			Camera.connect($scope.selectedNetwork, $scope.pin).then(function(){
 				console.info("Connected to "+$scope.selectedNetwork+".");
 				$location.path("/status");
 			});
@@ -59,17 +64,26 @@ angular.module('controllers', [])
 		};
 
 }])
-.controller('StatusCtrl', ['status', 
-	function(status){
-		$scope.status = status;
-		$scope.parseBatteryLevel = function(level){
-			if(level == 1)
-				return "Baja";
-			if(level == 2)
-				return "Media";
-			if(level == 3)
-				return "Alta";
-			if(level == 4)
-				return "Cargando";
-		};
+.controller('StatusCtrl', [ '$scope', 'Camera','$location', 
+	function($scope, Camera, $location){
+		if(Camera.isConnected())
+		{
+
+			$scope.status = Camera.getStatus();
+			$scope.batteryLevel = (function(level){
+				if(level == 1)
+					return "Baja";
+				if(level == 2)
+					return "Media";
+				if(level == 3)
+					return "Alta";
+				if(level == 4)
+					return "Cargando";
+			})($scope.status.battery.level);
+			
+		}
+		else
+		{
+			$location.path('/connect');
+		}
 }]);

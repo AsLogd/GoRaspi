@@ -11,57 +11,96 @@ function connectToCamera(req, res, retries){
     password: "goprohero" //Default password
   };
   WiFiControl.connectToAP(ap, function(err, response){
-    if(err)
-    {
-      console.log(err);
-      retries--;
-      if(retries > 0)
+
+    checkConnection(function(connected, status){
+      if(!connected)
       {
-        console.log("Retrying...("+retries+")");
-        setTimeout(function(){
-          connectToCamera(req, res, retries);
-        },1000);
+        //There is no connection
+        console.log("Could not connect(19): "+response.msg);
+        retries--;
+        if(retries > 0)
+        {
+          console.log("Retrying...("+retries+")");
+          setTimeout(function(){
+            connectToCamera(req, res, retries);
+          },1000);
+        }
+        
+        return;
       }
-      
-      return;
-    }
-    console.log("Pairing...");
-    request({
-      localAddress:'',
-      method: 'GET',
-      uri: 'https://10.5.5.9/gpPair?c=start&pin='+req.params.pin+'&mode=0',
-      rejectUnauthorized: false
-    },
-    function (error, response, body)
-    {
-      if(error) console.log("Error on start pairing:"+error);
-      if (!error && response.statusCode == 200)
+      else
       {
+        //THERE IS CONNECTION!
+        res.json(status);
+
+        console.log("Pairing...");
         request({
           localAddress:'',
           method: 'GET',
-          uri: 'https://10.5.5.9/gpPair?c=finish&pin='+req.params.pin+'&mode=0',
+          uri: 'https://10.5.5.9/gpPair?c=start&pin='+req.params.pin+'&mode=0',
           rejectUnauthorized: false
         },
         function (error, response, body)
         {
-          if(error) console.log("Error on finish pairing:"+error);
-          
           if (!error && response.statusCode == 200)
           {
-            res.json({success:true});
-            
-            console.log("Connected to "+req.params.network);
+            request({
+              localAddress:'',
+              method: 'GET',
+              uri: 'https://10.5.5.9/gpPair?c=finish&pin='+req.params.pin+'&mode=0',
+              rejectUnauthorized: false
+            },
+            function (error, response, body)
+            {
+              
+              if (!error && response.statusCode == 200)
+              {                
+                console.log("Connected to "+req.params.network);
+              }
+              else
+              {
+                console.log("Error on finish pairing"+JSON.stringify(response));
+              }
+            })
           }
-        })
+          else
+          {
+            console.log("Error on finish pairing"+JSON.stringify(response));
+          }
+        });
       }
     });
+      
   
   });
 }
 
+function checkConnection(cb){
+  request({
+    localAddress:'',
+    method: 'GET',
+    uri: 'http://10.5.5.9/gp/gpControl/status'
+  },
+  function (error, response, body)
+  {
+    if (!error && response.statusCode == 200)
+    {
+      console.log("Check connection:"+JSON.stringify(body));
+      if(cb) cb(true, body.status);
+    }
+    else
+    {
+      console.log("Check connection failed");
+      if(cb) cb(false);
+    }
+
+
+  });
+}
+
 function parseStatusObject(body){
-  var obj;
+  body = JSON.parse(body);
+  var obj = {};
   obj.battery = {
     available: (body.status["1"] == 1),
     level: body.status["2"]
@@ -109,7 +148,12 @@ app.get('/cameraStatus', function(req, res){
   {
     if (!error && response.statusCode == 200)
     {
+      console.log("Status recibido: "+ JSON.stringify(body));
       res.json(parseStatusObject(body));
+    }
+    else
+    {
+      res.json({error:error});
     }
   })
 });
