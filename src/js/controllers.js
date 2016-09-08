@@ -2,12 +2,12 @@
 
 angular.module('controllers', [])
 
-.controller('ConnectCtrl', ['$scope', 'API',
-	function ($scope, API) {
+.controller('ConnectCtrl', ['$scope', 'API', 'ngNotify',
+	function ($scope, API, ngNotify) {
 		$scope.step = 0;
 		$scope.networks = [];
 		$scope.selectedNetwork = "";
-		$scope.filterNetworks = false;
+		$scope.showNetworks = false;
 
 		$scope.nextStep = function(){
 			//Loading?
@@ -21,7 +21,14 @@ angular.module('controllers', [])
 			}
 			else if($scope.step === 1)
 			{
-				$scope.step++;
+				if($scope.selectedNetwork === "")
+				{
+					ngNotify.set('Por favor, selecciona una red','error');
+				}
+				else
+				{
+					$scope.step++;
+				}
 			}
 			else
 			{
@@ -44,7 +51,7 @@ angular.module('controllers', [])
 		};
 
 		$scope.goProNetworks = function(item){
-			if($scope.filterNetworks) 
+			if(!$scope.showNetworks) 
 				return item.ssid.indexOf("GP") !== -1;
 			else
 				return true;

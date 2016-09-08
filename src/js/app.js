@@ -4,13 +4,13 @@ angular.module('myApp', ['ngRoute', 'ngAnimate', 'ngNotify', 'controllers', 'dir
 .config(['$routeProvider', function($routeProvider) {
 
 	$routeProvider
-	.when('/', {
+	.when('/connect', {
 		templateUrl: 'partials/connect.html',
 		controller: 'ConnectCtrl',
 		name: 'connect'
 	})
 	.otherwise({
-		redirectTo: '/'
+		redirectTo: '/connect'
 	});
 	
 }])

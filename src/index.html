@@ -12,23 +12,17 @@
 	<script src="js/directives.js"></script>
 	<script src="js/services.js"></script>
 	
-	<link href='http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css' rel='stylesheet' type='text/css'>
-
-
 </head>
 <body>
 	<main>
 		<article>
-		<header>
-			<h1>Go raspi</h1>
-		</header>
 		<section>
 			<ul class="button-panel">
-				<li ng-if="!camera.isConnected()">Conectar camara</li>
-				<li ng-if="camera.isConnected()">Desconectar camara</li>
-				<li ng-class="{'enabled': camera.isConnected()}">Estado</li>
+				<li class="enabled" link-route="/connect"ng-if="!camera.isConnected()">Conectar camara</li>
+				<li class="enabled"  ng-if="camera.isConnected()">Desconectar camara</li>
+				<li link-route="/status" ng-class="{'enabled': camera.isConnected()}">Estado</li>
 			</ul>
-			<div ng-view></div>
+			<div class="view" ng-view></div>
 		</section>
 	</article>
 	</main>
