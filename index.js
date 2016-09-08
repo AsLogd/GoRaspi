@@ -3,6 +3,59 @@ var app = express();
 var request = require('request');
 var WiFiControl = require('wifi-control');
 
+var CONNECT_RETRIES = 3;
+
+function connectToCamera(req, res, retries){
+  var ap={
+    ssid: req.params.network,
+    password: "goprohero" //Default password
+  };
+  WiFiControl.connectToAP(ap, function(err, response){
+    if(err)
+    {
+      console.log("Retrying...");
+      retries--;
+      setTimeout(function(){
+        connectToCamera(req, res, retries);
+      },1000);
+      
+      return;
+    }
+    console.log("Pairing...");
+    request({
+      localAddress:'',
+      method: 'GET',
+      uri: 'https://10.5.5.9/gpPair?c=start&pin='+req.params.pin+'&mode=0',
+      rejectUnauthorized: false
+    },
+    function (error, response, body)
+    {
+      if(error) console.log("Error on start pairing:"+error);
+      if (!error && response.statusCode == 200)
+      {
+        res.json({success:true});
+        request({
+          localAddress:'',
+          method: 'GET',
+          uri: 'https://10.5.5.9/gpPair?c=finish&pin='+req.params.pin+'&mode=0',
+          rejectUnauthorized: false
+        },
+        function (error, response, body)
+        {
+          if(error) console.log("Error on finish pairing:"+error);
+          if (!error && response.statusCode == 200)
+          {
+            res.json({success:true});
+            
+            console.log("Connected to "+req.params.network);
+          }
+        })
+      }
+    });
+  
+  });
+}
+
 WiFiControl.init({
   debug: true
 });
@@ -18,31 +71,8 @@ app.get('/networks', function(req, res){
 
 app.put('/connect/:network/:pin', function(req, res){
   console.log("Connecting to: "+req.params.network + ", "+req.params.pin+"...");
-  var ap={
-    ssid: req.params.network,
-    password: "goprohero" //Default password
-  };
-
-  WiFiControl.connectToAP(ap, function(err, response){
-    if(err) console.log(err);
-    console.log(response.msg);
-    if(response.success)
-    {
-      request({
-        localAddress:'',
-        method: 'GET',
-        uri: 'https://10.5.5.9/gpPair?c=start&pin='+req.params.pin+'&mode=0'
-      },
-      function (error, response, body)
-      {
-        if (!error && response.statusCode == 200)
-        {
-          res.json({success:true});
-          console.log("Connected to "+req.params.network);
-        }
-      })
-    }
-  });
+  
+  connectToCamera(req, res, CONNECT_RETRIES);
 
 });
 
