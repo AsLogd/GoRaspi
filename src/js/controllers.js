@@ -97,6 +97,10 @@ angular.module('controllers', [])
 				$rootScope.$broadcast('finishLoading');
 				console.info("Connected to "+$scope.selectedNetwork+".");
 				$location.path("/status");
+			}, function(){
+				$rootScope.$broadcast('finishLoading');
+
+				ngNotify.set("No se ha podido conectar con la cámara. Comprueba que la red existe y prueba otra vez.", "error");
 			});
 		};
 
@@ -106,7 +110,10 @@ angular.module('controllers', [])
 				$rootScope.$broadcast('finishLoading');
 				console.info("Connected to "+ap.ssid+".");
 				$location.path("/status");
+			}, function(){
+				$rootScope.$broadcast('finishLoading');
 
+				ngNotify.set("No se ha podido conectar con la cámara. Comprueba que la red existe y prueba otra vez.", "error");
 			});
 		};
 
@@ -140,4 +147,130 @@ angular.module('controllers', [])
 		{
 			$location.path('/connect');
 		}
+}])
+.controller('TasksCtrl',['$scope', '$rootScope', 'API',
+	function($scope, $rootScope, API){
+	$scope.anyTaskSelected = false;
+	$scope.creatingTask = false;
+	$scope.t = {};
+	$scope.t.dayList = [];
+	$scope.$watch('$root.serverStatus.aps', function() {
+		if($rootScope.serverStatus && $rootScope.serverStatus.tasks)
+		{
+	    	$scope.tasks = $rootScope.serverStatus.tasks;
+			
+		}
+		else
+		{
+			$scope.tasks = [];
+		}
+	});
+
+	function unselectTasks()
+	{
+		$scope.tasks.forEach(function(element){
+			element.selected = false;
+		});
+	}
+
+	$scope.getNumber = function(num){
+		return new Array(num);
+	};
+
+	$scope.deleteTask = function(task){
+		if(task)
+		{
+			$rootScope.$broadcast('startLoading');
+			API.deleteTask(task).then(function(){
+				console.log("Task deleted");
+				API.getServerStatus().then(function(response){
+					$rootScope.$broadcast('finishLoading');
+					console.log(response);
+					$rootScope.serverStatus = response.data;
+				});	
+			});
+		}
+	};
+
+	$scope.selectTask = function(task){
+		unselectTasks();
+		task.selected = true;
+		$scope.anyTaskSelected = true;
+		$scope.selectedTask = task;
+	};
+
+	$scope.newTask = function(){
+		$scope.creatingTask = true;
+	};
+
+	$scope.createTask = function(task){
+		var negateHours = false;
+		var hours = [];
+		for(var i = 0; i < 23; i++)
+		{
+			hours.push(false);
+		}
+		task.from = parseInt(task.from);
+		task.to = parseInt(task.to);
+		if(task.from > task.to)
+		{
+			negateHours = true;
+			var aux = task.to;
+			task.to = task.from;
+			task.from = aux;
+		}
+		for(i = task.from-1; i < task.to; i++)
+		{
+			hours[i] = true;
+		}
+
+		var cron = "*/"+task.minutes+" ";
+
+		for(i = 0; i < hours.length; i++)
+		{
+			if(negateHours)
+			{
+				hours[i] = !hours[i];
+			}
+			if(hours[i])
+			{
+				cron += (i+1)+",";
+			}
+		}
+
+		cron = cron.slice(0,cron.length-1);
+
+		cron += " * * " + task.dayList.sort().toString();
+		
+		task.cron = cron;
+
+		$rootScope.$broadcast('startLoading');
+		API.createTask(task).then(function(){
+			console.info("Task created");
+			$scope.creatingTask = false;
+			API.getServerStatus().then(function(response){
+				$rootScope.$broadcast('finishLoading');
+				console.log(response);
+				$rootScope.serverStatus = response.data;
+			});
+		});
+		
+
+	};
+
+	$scope.selectDay = function(num){
+		if($scope.daySelected(num))
+		{
+			$scope.t.dayList.splice($scope.t.dayList.indexOf(num), 1);
+		}
+		else
+		{
+			$scope.t.dayList.push(num);
+		}
+	};
+
+	$scope.daySelected = function(num){
+		return $scope.t.dayList.indexOf(num) != -1;
+	};
+
 }]);

@@ -1,0 +1,78 @@
+#tasks
+{
+	table.taskList
+	{
+    	width: 100%;
+	    border: thin solid #222;
+	    text-align:center;
+	    th
+	    {
+	    	border-bottom:thin solid #222;
+	    }
+
+	    tr.selected
+	    {
+	    	background-color:#222;
+	    }
+	}
+	.margin-top
+	{
+		margin-top:20px;
+	}
+	div.taskCreator
+	{
+		& > div
+		{
+			display:flex;
+			flex-wrap:wrap;
+		}
+		label
+		{
+			display:block;
+			&.title
+			{
+				flex: 0 0 100%;
+				font-size:20px;
+				font-weight:bold;
+			}
+
+		}
+
+
+
+		.padding
+		{
+			padding:5px 15px;
+		}
+
+		ul.dayList
+		{
+			display: flex;
+			flex-wrap: wrap;
+		
+			padding: 0;
+			margin: 0;
+			list-style: none;
+			li
+			{
+				flex: 1 1 auto;
+			    padding: 10px 10px;
+				margin: 5px 10px;
+				background-color: darken(@acceptColor, 50%);
+				border: thin solid @acceptColor;
+				text-align: center;
+				cursor:pointer;
+
+				&.selected
+				{
+					background-color: darken(@acceptColor, 30%);
+				}
+			}
+		}
+
+		div.button
+		{
+			justify-content:center;
+		}
+	}
+}

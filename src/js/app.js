@@ -24,13 +24,18 @@ angular.module('myApp', ['ngRoute', 'ngAnimate', 'ngNotify', 'controllers', 'dir
 		controller: 'StatusCtrl',
 		name: 'status'
 	})
+	.when('/tasks', {
+		templateUrl: 'partials/tasks.html',
+		controller: 'TasksCtrl',
+		name: 'tasks'
+	})
 	.otherwise({
 		redirectTo: '/'
 	});
 	
 }])
 .run(['$rootScope', '$location', function($rootScope, $location) {
-  $rootScope.title = "MyAngularSeed";
+  $rootScope.title = "Intervalómetro";
   $location.path('/');
 
 }]);

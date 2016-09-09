@@ -3,10 +3,14 @@ var app = express();
 var request = require('request');
 var WiFiControl = require('wifi-control');
 var storage = require('node-persist');
+var cron = require('node-cron');
+
+
 
 var CONNECT_RETRIES = 3;
 var CHECK_TIMEOUT = 5000;
 
+var _tasksReference = {};
 var serverState = {};
 
 storage.init({}).then(function(){
@@ -47,10 +51,68 @@ function applyState(){
     });
   }
   //We had tasks running
-  if(serverState.tasks.length > 0)
+  if(serverState.tasks && serverState.tasks.length > 0)
   {
-    //TODO: init tasks
+    serverState.tasks.forEach(function(task){
+      console.log("Scheduling task "+task.name+"...");
+      scheduleTask(task);
+      
+    });
   }
+  else
+  {
+    serverState.tasks = [];
+  }
+}
+
+function scheduleTask(task)
+{
+  _tasksReference[task.name] = cron.schedule(task.cron, function(){
+    //Force photo mode
+    request({
+      localAddress:'',
+      method: 'GET',
+      uri: 'http://10.5.5.9/gp/gpControl/command/mode?p=1'
+    },
+    function (error, response, body)
+    {
+      //Mode changed
+      if (!error && response.statusCode == 200)
+      {
+        //Take photo
+        request({
+          localAddress:'',
+          method: 'GET',
+          uri: 'http://10.5.5.9/gp/gpControl/command/shutter?p=1'
+        },
+        function (error, response, body)
+        {
+          //Photo taken
+          if (!error && response.statusCode == 200)
+          {
+            console.log("[CRON] took a photo");
+          }
+          else
+          {
+            console.log("[CRON] couldn't take a photo");
+          }
+
+        });
+      }
+      else
+      {
+        console.log("[CRON] couldn't change to photo mode");
+      }
+
+    });
+  
+  });
+
+
+}
+
+function unscheduleTask(name){
+  _tasksReference[name].destroy();
 }
 
 function pushIfNotExists(aps, ap){
@@ -60,6 +122,30 @@ function pushIfNotExists(aps, ap){
   }
 
   aps.push(ap);
+}
+
+function addTaskIfNotExists(tasks, task){
+  for(var i = 0; i < tasks.length; i++)
+  {
+    if(tasks[i].name == task.name) return false;
+  }
+
+  tasks.push(task);
+
+  return true;
+}
+
+function deleteTask(tasks, name){
+  for(var i = 0; i < tasks.length; i++)
+  {
+    if(tasks[i].name == name)
+    {
+      tasks.splice(i, 1);
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function connectToCamera(network, pin, password, retries, cb, cberr){
@@ -101,7 +187,7 @@ function connectToCamera(network, pin, password, retries, cb, cberr){
           request({
             localAddress:'',
             method: 'GET',
-            uri: 'https://10.5.5.9/gpPair?c=start&pin='+pin+'&mode=0',
+            uri: 'https://10.5.5.9/gpPair?c=start&pin='+pin+'&mode=1',
             rejectUnauthorized: false
           },
           function (error, response, body)
@@ -111,7 +197,7 @@ function connectToCamera(network, pin, password, retries, cb, cberr){
               request({
                 localAddress:'',
                 method: 'GET',
-                uri: 'https://10.5.5.9/gpPair?c=finish&pin='+pin+'&mode=0',
+                uri: 'https://10.5.5.9/gpPair?c=finish&pin='+pin+'&mode=1',
                 rejectUnauthorized: false
               },
               function (error, response, body)
@@ -161,18 +247,20 @@ function checkConnection(cb){
   },
   function (error, response, body)
   {
-    console.log("helou2");
-    if (!error && response.statusCode == 200)
+    if(!resolved)
     {
-      console.log("Check connection [ok]");
-      if(cb) cb(true, parseStatusObject(body));
+      resolved = true;
+      if (!error && response.statusCode == 200)
+      {
+        console.log("Check connection [ok]");
+        if(cb) cb(true, parseStatusObject(body));
+      }
+      else
+      {
+        console.log("Check connection [failed]");
+        if(cb) cb(false);
+      }
     }
-    else
-    {
-      console.log("Check connection [failed]");
-      if(cb) cb(false);
-    }
-    resolved = true;
 
   });
 }
@@ -225,7 +313,7 @@ app.get('/cameraStatus', function(req, res){
   {
     if (!error && response.statusCode == 200)
     {
-      console.log("Status recibido: "+ JSON.stringify(body));
+      console.log("Status recibido");
       res.json(parseStatusObject(body));
     }
     else
@@ -241,8 +329,34 @@ app.put('/connect/:network/:pin/:password', function(req, res){
   connectToCamera(req.params.network, req.params.pin, req.params.password, CONNECT_RETRIES, function(status){
     res.json(status);
   }, function(){
-    res.status(404).json({msg: "No se ha podido conectar con la red"});
+    if(!res.headersSent)
+      res.status(404).json({msg: "No se ha podido conectar con la red"});
   });
+
+});
+
+app.put('/task/:name/:action/:cron', function(req, res){
+  var task = {
+    name: req.params.name,
+    action: req.params.action,
+    cron: req.params.cron
+  };
+  addTaskIfNotExists(serverState.tasks, task);
+  storage.setItem("serverState", serverState);
+  console.log("New task created: "+JSON.stringify(task));
+  scheduleTask(task);
+  res.send({success:true});
+
+});
+
+app.delete('/task/:name', function(req, res){
+  if(deleteTask(serverState.tasks, req.params.name))
+  {
+    storage.setItem("serverState", serverState);
+    console.log("Task deleted: "+req.params.name);
+    unscheduleTask(req.params.name);
+  }
+  res.send({success:true});
 
 });
 

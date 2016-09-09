@@ -22,6 +22,14 @@ angular.module('services', [])
 		return $http.get(API_URL+"/init");
 	};
 
+	service.createTask = function(task){
+		return $http.put(API_URL+"/task/"+$window.encodeURIComponent(task.name)+"/"+task.action+"/"+$window.encodeURIComponent(task.cron));
+	};
+	service.deleteTask = function(task){
+		return $http.delete(API_URL+"/task/"+$window.encodeURIComponent(task.name));
+	};
+
+	//Not implemented
 	service.disconnect = function(){
 		return $http.delete(API_URL+"/disconnect");
 	};
@@ -58,6 +66,8 @@ angular.module('services', [])
 			_camera.status = response.data;
 			_camera.connected = true;
 			deferred.resolve();
+		}, function(){
+			deferred.reject();
 		});
 
 		return deferred.promise;
@@ -69,6 +79,8 @@ angular.module('services', [])
 			_camera.status = response.data;
 			_camera.connected = true;
 			deferred.resolve();
+		}, function(){
+			deferred.reject();
 		});
 
 		return deferred.promise;

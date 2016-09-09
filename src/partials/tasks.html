@@ -1,0 +1,77 @@
+<article id="tasks">
+	<div class="taskListContainer" ng-if="tasks.length > 0">
+		<h1>Lista de tareas</h1>
+		<table class="taskList">
+			<tr>
+				<th>Nombre</th>
+				<th>Acción</th>
+				<th>Cron</th>
+			</tr>
+			<tr ng-repeat="task in tasks" ng-click="selectTask(task)" ng-class="{'selected': task.selected}">
+				<td>{{task.name}}</td>
+				<td>{{task.action}}</td>
+				<td>{{task.cron}}</td>
+			</tr>
+		</table>
+		<div class="button short margin-top" ng-class="{'enabled': anyTaskSelected}" ng-click="deleteTask(selectedTask)">Borrar tarea</div>
+	</div>
+	<div class="button short margin-top animate-show" ng-hide="creatingTask" ng-click="newTask()">
+		Nueva tarea
+	</div>
+	<div class="taskCreator animate-show" ng-show="creatingTask">
+		<div>
+			<label class="title">Nombre:</label>
+			<div class="padding">
+				<input type="text" ng-model="t.name">
+			</div>
+			<label class="title">Acción:</label>
+			<div class="padding">
+				<select ng-model="t.action">
+					<option>Foto</option>
+				</select>
+			</div>
+		</div>
+		<div>
+			<label class="title">Intervalo:</label>
+			<div class="padding">
+				<label>Minutos:</label>
+				<select ng-model="t.minutes">
+					<option ng-repeat="i in getNumber(59) track by $index">{{$index}}</option>
+				</select>
+			</div>
+		</div>
+		<div>
+			<label class="title">Horario:</label>
+			<div class="padding">
+				<label>Desde:</label>
+				<select ng-model="t.from">
+					<option ng-repeat="i in getNumber(23) track by $index" value="{{$index}}">{{$index}}:00h</option>
+				</select>
+			</div>
+			<div class="padding">
+				<label>Hasta:</label>
+				<select ng-model="t.to">
+					<option ng-repeat="i in getNumber(23) track by $index" value="{{$index}}">{{$index}}:00h</option>
+				</select>
+			</div>
+		</div>
+		<div class="input">
+			<label class="title">Dias:</label>
+			<div class="padding">
+				<ul class="dayList">
+					<li ng-class="{'selected': daySelected(1)}" ng-click="selectDay(1)">Lunes</li>
+					<li ng-class="{'selected': daySelected(2)}" ng-click="selectDay(2)">Martes</li>
+					<li ng-class="{'selected': daySelected(3)}" ng-click="selectDay(3)">Miércoles</li>
+					<li ng-class="{'selected': daySelected(4)}" ng-click="selectDay(4)">Jueves</li>
+					<li ng-class="{'selected': daySelected(5)}" ng-click="selectDay(5)">Viernes</li>
+					<li ng-class="{'selected': daySelected(6)}" ng-click="selectDay(6)">Sábado</li>
+					<li ng-class="{'selected': daySelected(7)}" ng-click="selectDay(7)">Domingo</li>
+
+				</ul>
+			</div>
+		</div>
+		<div class="button short margin-top" ng-click="createTask(t)">
+			Crear tarea
+		</div>
+	</div>
+</article>

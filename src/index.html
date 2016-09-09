@@ -26,6 +26,7 @@
 						{{!camera.isConnected() ? "Conectar cámara" : "Cambiar cámara"}}
 					</li>
 					<li link-route="/status" ng-class="{'enabled': camera.isConnected()}">Estado</li>
+					<li link-route="/tasks" ng-class="{'enabled': camera.isConnected()}">Tareas</li>
 				</ul>
 				<div class="view fade" ng-view></div>
 			</section>
