@@ -4,6 +4,8 @@ var request = require('request');
 var WiFiControl = require('wifi-control');
 var storage = require('node-persist');
 var cron = require('node-cron');
+var sys = require('sys')
+var exec = require('child_process').exec;
 
 
 
@@ -359,6 +361,11 @@ app.delete('/task/:name', function(req, res){
   res.send({success:true});
 
 });
+
+app.delete('/reset', function(req, res){
+  exec("reboot");
+});
+
 
 app.delete('/disconnect', function(req, res){
   //TODO

@@ -19,6 +19,7 @@
 		<article>
 			<header ng-controller="HeaderCtrl">
 				<h1>{{ssid ? "Conectado a: "+ssid : "Desconectado"}}</h1>
+				<div class="rebootBtn" ng-click="reboot">{{booting ? seconds : "Reiniciar"}}</div>
 			</header>
 			<section >
 				<ul ng-controller="PanelCtrl" class="button-panel">

@@ -1,9 +1,12 @@
 
 
 angular.module('controllers', [])
-.controller('HeaderCtrl', ['$scope', '$rootScope', function($scope, $rootScope){
+.controller('HeaderCtrl', ['$scope', '$rootScope', 'API', '$timeout', '$location', 
+	function($scope, $rootScope, API, $timeout, $location){
 	$scope.ssid = "";
-	$scope.$watch('$root.serverStatus.lastAp.ssid', function() {
+	$scope.booting = false;
+	$scope.seconds = 30;
+	$scope.$watch('$root.serverStatus', function() {
 		if($rootScope.serverStatus && $rootScope.serverStatus.lastAp && 
 			$rootScope.serverStatus.lastAp.ssid)
 		{
@@ -11,6 +14,24 @@ angular.module('controllers', [])
 			
 		}
 	});
+
+	$scope.reboot = function(){
+		function wait(){
+			$scope.seconds--;
+			if($scope.seconds > 0)
+				$timeout(function(){ 
+					wait(); 
+				}, 1000);
+			else
+			{
+				$location.reload();
+			}
+		}
+		$scope.booting = true;
+		$rootScope.$broadcast('startLoading');
+		API.reboot();
+		wait();
+	};
 }])
 .controller('PanelCtrl', ['$scope', 'Camera', function($scope, camera){
 	$scope.camera = camera;
@@ -154,6 +175,25 @@ angular.module('controllers', [])
 	$scope.creatingTask = false;
 	$scope.t = {};
 	$scope.t.dayList = [];
+	$scope.intervalOptions = (function(){
+		var result = [];
+		for(var i = 5; i < 60; i++)
+		{
+			result.push({
+				seconds: i,
+				label: i+" seg"
+			});
+		}
+		for(i = 1; i < 60; i++)
+		{
+			result.push({
+				seconds: i*60,
+				label: i+" min"
+			});
+		}
+
+		return result;
+	})();
 	$scope.$watch('$root.serverStatus.aps', function() {
 		if($rootScope.serverStatus && $rootScope.serverStatus.tasks)
 		{
@@ -219,12 +259,22 @@ angular.module('controllers', [])
 			task.to = task.from;
 			task.from = aux;
 		}
-		for(i = task.from-1; i < task.to; i++)
+		for(i = task.from; i < task.to; i++)
 		{
 			hours[i] = true;
 		}
 
-		var cron = "*/"+task.minutes+" ";
+		var cron;
+
+		if(task.seconds >= 60)
+		{
+			cron = "*/"+ parseInt(task.seconds/60) +" ";
+		}
+		else
+		{
+			cron = "*/" + task.seconds + " * ";
+		}
+
 
 		for(i = 0; i < hours.length; i++)
 		{
@@ -234,7 +284,7 @@ angular.module('controllers', [])
 			}
 			if(hours[i])
 			{
-				cron += (i+1)+",";
+				cron += (i)+",";
 			}
 		}
 

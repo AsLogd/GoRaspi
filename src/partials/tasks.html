@@ -34,9 +34,8 @@
 		<div>
 			<label class="title">Intervalo:</label>
 			<div class="padding">
-				<label>Minutos:</label>
-				<select ng-model="t.minutes">
-					<option ng-repeat="i in getNumber(59) track by $index">{{$index}}</option>
+				<select ng-model="t.seconds">
+					<option ng-repeat="i in intervalOptions track by i.seconds" value="{{i.seconds}}">{{i.label}}</option>
 				</select>
 			</div>
 		</div>
@@ -45,13 +44,13 @@
 			<div class="padding">
 				<label>Desde:</label>
 				<select ng-model="t.from">
-					<option ng-repeat="i in getNumber(23) track by $index" value="{{$index}}">{{$index}}:00h</option>
+					<option ng-repeat="i in getNumber(24) track by $index" value="{{$index}}">{{$index}}:00h</option>
 				</select>
 			</div>
 			<div class="padding">
 				<label>Hasta:</label>
 				<select ng-model="t.to">
-					<option ng-repeat="i in getNumber(23) track by $index" value="{{$index}}">{{$index}}:00h</option>
+					<option ng-repeat="i in getNumber(24) track by $index" value="{{$index}}">{{$index}}:00h</option>
 				</select>
 			</div>
 		</div>
