@@ -294,7 +294,13 @@ function parseStatusObject(body){
 
 }
 
-app.get('/init', function(req, res){
+app.get('/init/:timestamp', function(req, res){
+  res.json(serverState);
+  console.log("Sync date..."+(req.params.timestamp));
+  exec('date +%s -s @'+req.params.timestamp);
+});
+
+app.get('/getStatus', function(req, res){
   res.json(serverState);
 });
 
@@ -364,7 +370,7 @@ app.delete('/task/:name', function(req, res){
 
 app.get('/reboot', function(req, res){
   console.log("Rebooting...");
-  //exec("reboot");
+  exec("reboot");
 });
 
 

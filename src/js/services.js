@@ -4,6 +4,12 @@ angular.module('services', [])
 .factory('API',['$http', '$q', '$window', function($http, $q, $window){
 	var API_URL = "http://"+$window.location.hostname +":"+ $window.location.port;
 	var service = {};
+
+	service.init = function(){
+		var timestamp = parseInt(Date.now()/1000);
+		return $http.get(API_URL+"/init/"+timestamp);
+	};
+
 	service.getNetworks = function(){
 		return $http.get(API_URL+"/networks");
 	};
@@ -19,7 +25,7 @@ angular.module('services', [])
 	};
 
 	service.getServerStatus = function(){
-		return $http.get(API_URL+"/init");
+		return $http.get(API_URL+"/getStatus");
 	};
 
 	service.createTask = function(task){

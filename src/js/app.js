@@ -9,7 +9,7 @@ angular.module('myApp', ['ngRoute', 'ngAnimate', 'ngNotify', 'controllers', 'dir
 		name: 'init',
 		resolve:{
 			'serverStatus':['API', function(API){
-				return API.getServerStatus();
+				return API.init();
 			}]
 		},
 		template: " "
