@@ -5,7 +5,7 @@ angular.module('controllers', [])
 	function($scope, $rootScope, API, $timeout, $route){
 	$scope.ssid = "";
 	$scope.booting = false;
-	$scope.seconds = 30;
+	$scope.seconds = 100;
 	$scope.$watch('$root.serverStatus', function() {
 		if($rootScope.serverStatus && $rootScope.serverStatus.lastAp && 
 			$rootScope.serverStatus.lastAp.ssid)
