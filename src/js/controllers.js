@@ -1,8 +1,8 @@
 
 
 angular.module('controllers', [])
-.controller('HeaderCtrl', ['$scope', '$rootScope', 'API', '$timeout', '$location', 
-	function($scope, $rootScope, API, $timeout, $location){
+.controller('HeaderCtrl', ['$scope', '$rootScope', 'API', '$timeout', '$route', 
+	function($scope, $rootScope, API, $timeout, $route){
 	$scope.ssid = "";
 	$scope.booting = false;
 	$scope.seconds = 30;
@@ -24,7 +24,8 @@ angular.module('controllers', [])
 				}, 1000);
 			else
 			{
-				$location.reload();
+				$route.reload();
+				$scope.booting = false;
 			}
 		}
 		$scope.booting = true;

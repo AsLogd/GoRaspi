@@ -29,10 +29,16 @@ angular.module('services', [])
 		return $http.delete(API_URL+"/task/"+$window.encodeURIComponent(task.name));
 	};
 
+	service.reboot = function(){
+		return $http.get(API_URL+"/reboot");
+	};
+
 	//Not implemented
 	service.disconnect = function(){
 		return $http.delete(API_URL+"/disconnect");
 	};
+
+
 
 	return service;
 }])
