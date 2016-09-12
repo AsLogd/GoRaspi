@@ -368,7 +368,8 @@ app.delete('/task/:name', function(req, res){
 
 });
 
-app.get('/reboot', function(req, res){
+app.delete('/reboot', function(req, res){
+  res.send();
   console.log("Rebooting...");
   exec("reboot");
 });

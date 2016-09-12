@@ -36,7 +36,7 @@ angular.module('services', [])
 	};
 
 	service.reboot = function(){
-		return $http.get(API_URL+"/reboot");
+		return $http.delete(API_URL+"/reboot");
 	};
 
 	//Not implemented
