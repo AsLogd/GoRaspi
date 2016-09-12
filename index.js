@@ -344,7 +344,7 @@ function parseStatusObject(body){
 app.get('/init/:timestamp', function(req, res){
   res.json(serverState);
   console.log("Sync date..."+(req.params.timestamp));
-  exec('date +%s -s @'+req.params.timestamp);
+  exec('sudo date +%s -s @'+req.params.timestamp);
 });
 
 app.get('/getStatus', function(req, res){
@@ -381,8 +381,9 @@ app.get('/cameraStatus', function(req, res){
 app.put('/connect/:network/:pin/:password', function(req, res){
   console.log("Connecting to: "+req.params.network + ", "+req.params.pin+"...");
   
-  if(req.params.pin === undefined)
+  if(req.params.pin === "undefined")
   {
+    console.log("This looks like an existing connection (no pin)");
     connectToExisting(req.params.network, req.params.password, CONNECT_RETRIES, function(status){
       res.json(status);
     }, function(){
