@@ -150,6 +150,53 @@ function deleteTask(tasks, name){
   return false;
 }
 
+function connectToCamera(network, password, retries, cb, cberr){
+  var ap={
+    ssid: network,
+    password: (password !== "undefined") ? password : "goprohero" //Default password
+  };
+
+  WiFiControl.connectToAP(ap, function(err, response){
+    checkConnection(function(connected, status){
+      if(!connected)
+      {
+        //There is no connection
+        console.log("Could not connect(19): "+response.msg);
+        retries--;
+        if(retries > 0)
+        {
+          console.log("Retrying...("+retries+")");
+          setTimeout(function(){
+            connectToCamera(network, pin, password, retries, cb, cberr);
+          },1000);
+        }
+        else
+        {
+
+          if(cberr) cberr();
+
+        }
+        
+        return;
+      }
+      else
+      {
+        //THERE IS CONNECTION!
+        cb(status);
+        console.log("Connected to "+network);
+        serverState.aps = serverState.aps || [];
+        pushIfNotExists(serverState.aps, ap);
+        serverState.lastAp = ap;
+        console.log("New server state:" + JSON.stringify(serverState));
+        storage.setItem("serverState", serverState);
+      }
+    });
+      
+  
+  });
+}
+
+
 function connectToCamera(network, pin, password, retries, cb, cberr){
   var ap={
     ssid: network,
@@ -334,6 +381,16 @@ app.get('/cameraStatus', function(req, res){
 app.put('/connect/:network/:pin/:password', function(req, res){
   console.log("Connecting to: "+req.params.network + ", "+req.params.pin+"...");
   
+  if(req.params.pin === undefined)
+  {
+    connectToExisting(req.params.network, req.params.password, CONNECT_RETRIES, function(status){
+      res.json(status);
+    }, function(){
+      if(!res.headersSent)
+        res.status(404).json({msg: "No se ha podido conectar con la red"});
+    });
+  }
+
   connectToCamera(req.params.network, req.params.pin, req.params.password, CONNECT_RETRIES, function(status){
     res.json(status);
   }, function(){
