@@ -150,7 +150,7 @@ function deleteTask(tasks, name){
   return false;
 }
 
-function connectToCamera(network, password, retries, cb, cberr){
+function connectToExisting(network, password, retries, cb, cberr){
   var ap={
     ssid: network,
     password: (password !== "undefined") ? password : "goprohero" //Default password
@@ -390,13 +390,17 @@ app.put('/connect/:network/:pin/:password', function(req, res){
         res.status(404).json({msg: "No se ha podido conectar con la red"});
     });
   }
+  else
+  {
+    connectToCamera(req.params.network, req.params.pin, req.params.password, CONNECT_RETRIES, function(status){
+      res.json(status);
+    }, function(){
+      if(!res.headersSent)
+        res.status(404).json({msg: "No se ha podido conectar con la red"});
+    });
+    
+  }
 
-  connectToCamera(req.params.network, req.params.pin, req.params.password, CONNECT_RETRIES, function(status){
-    res.json(status);
-  }, function(){
-    if(!res.headersSent)
-      res.status(404).json({msg: "No se ha podido conectar con la red"});
-  });
 
 });
 
